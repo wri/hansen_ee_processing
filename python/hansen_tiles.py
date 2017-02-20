@@ -121,7 +121,9 @@ def run_in(img,maxz,minz,v,threshold,last_to_asset=False,scale=SCALE):
     for z in range(maxz,minz-1,-1):
         zimg=zviz(img,z,scale)
         task=export_tiles(zimg,z,v,threshold)
-    if last_to_asset:
+    if (not last_to_asset) or (last_to_asset.lower()=='false'):
+        print 'skiping inside-asset-export'
+    else:
         print 'export asset:',z
         task=export_asset(zimg,z,v,threshold)
 
