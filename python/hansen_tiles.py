@@ -14,8 +14,11 @@ BANDS=['intensity','blank','lossyear']
 PROJECT_ROOT='projects/wri-datalab'
 HANSEN_COMPOSITE_IMG='HansenComposite_14-15'
 HANSEN_ZLEVEL_FOLDER='HansenZLevel'
+GCE_TILE_ROOT='Hansen14_15'
 THRESHOLDS=[10,15,20,25,30,50,75]
-VERSION=None
+DEFAULT_VERSION=1
+TEST_RUN=True
+NOISY=True
 
 
 #
@@ -72,74 +75,83 @@ def zjoin(img_i,img_ly):
 #
 # EXPORTERS
 #
-def export_tiles(image,z):
-    name='hansen_composite_py{}'.format(VERSION)
-    print('tiles:',z,name)
-    task=ee.batch.Export.map.toCloudStorage(
-        image=image, 
-        description='{}__{}'.format(name,z), 
-        bucket='forma-public', 
-        path='HANSEN_TEST/byzlevel/{}'.format(name), 
-        writePublicTiles=True, 
-        maxZoom=z, 
-        minZoom=z, 
-        region=world.coordinates().getInfo(), 
-        skipEmptyTiles=True
-    )
-    task.start()
-    return task
+def export_tiles(image,z,v):
+    tiles_path=gce_tiles_path(v)
+    name=tiles_path.split('/')[-1]
+    print('tiles:',z,name,tiles_path)
+    if not TEST_RUN:
+        task=ee.batch.Export.map.toCloudStorage(
+            image=image, 
+            description='{}__{}'.format(name,z), 
+            bucket='forma-public', 
+            path=tiles_path, 
+            writePublicTiles=True, 
+            maxZoom=z, 
+            minZoom=z, 
+            region=world.coordinates().getInfo(), 
+            skipEmptyTiles=True
+        )
+        task.start()
+        if NOISY: print task.status()
+        return task
 
 
-def export_asset(image,z):
-    name=zlevel_asset_name(z)
+def export_asset(image,z,v):
+    name=zlevel_asset_name(v,z)
     print('asset:',z,name)
-    task=ee.batch.Export.image.toAsset(
-        image=image, 
-        description=name, 
-        assetId='{}/{}'.format(PROJECT_ROOT,name), 
-        scale=Z_LEVELS[z], 
-        crs=CRS, 
-        region=world.coordinates().getInfo(),
-        maxPixels=500000000
-    )
-    task.start()
-    return task
+    if not TEST_RUN:
+        task=ee.batch.Export.image.toAsset(
+            image=image, 
+            description=name, 
+            assetId='{}/{}'.format(PROJECT_ROOT,name), 
+            scale=Z_LEVELS[z], 
+            crs=CRS, 
+            region=world.coordinates().getInfo(),
+            maxPixels=500000000
+        )
+        task.start()
+        if NOISY: print task.status()
+        return task
 
 
 #
 # RUN
 #
-def run_in(img,maxz,minz,last_to_asset=False,scale=SCALE):
+def run_in(img,maxz,minz,v,last_to_asset=False,scale=SCALE):
     for z in range(maxz,minz-1,-1):
         zimg=zviz(img,z,scale)
-        task=export_tiles(zimg,z)
-        print "z",z,task.status()
+        task=export_tiles(zimg,z,v)
     if last_to_asset:
         print 'export asset:',z
-        task=export_asset(zimg,z)
-        print "z",z,task.status()
+        task=export_asset(zimg,z,v)
 
 
-def run_out(img_i,img_ly,maxz,minz,scale):
+def run_out(img_i,img_ly,maxz,minz,v,scale):
     for z in range(maxz,minz-1,-1):
         zimg_i=zintensity(img_i,z,scale,False)
         zimg_ly=zlossyear(img_ly,z,scale)
         zimg=zjoin(zimg_i,zimg_ly)
-        task=export_tiles(zimg,z)
-        print "z",z,task.status()
+        task=export_tiles(zimg,z,v)
+
+
+#
+# PATH/IMG/IC HELPERS
+#
+def gce_tiles_path(v):
+    return '{}/tiles/{}'.format(GCE_TILE_ROOT,v)
 
 
 def threshold_composite(threshold):
     return ee.Image(HANSEN_COMPOSITE_IMG).select(['loss_{}'.format(threshold)])
 
 
-def zlevel_asset_name(z):
-    if VERSION: versioning='_v{}'.format(VERSION)
-    else: versioning=''
-    return 'hansen{}_zlevel_{}'.format(versioning,z)
+def zlevel_asset_name(v,z):
+    return 'hansen_v{}_zlevel_{}'.format(v,z)
 
-def zlevel_asset(z):
-    return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(z)))
+
+def zlevel_asset(v,z):
+    return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(v,z)))
+
 
 #
 # MAIN
@@ -147,20 +159,21 @@ def zlevel_asset(z):
 def _inside(args):
     hc=threshold_composite(args.threshold)
     hcz=ee.Image(0).where(hc,hc)
-    run_in(hcz,args.max,args.min,args.asset)
+    run_in(hcz,args.max,args.min,args.version,args.asset)
 
 
 def _outside(args):
     last_z=args.max+1
     scale=Z_LEVELS[last_z]
-    img=zlevel_asset(z)
+    img=zlevel_asset(args.version,last_z)
     img_i=img.select(['intensity'])
     img_ly=img.select(['lossyear'])
-    run_out(img_i,img_ly,args.max,args.min,scale)
+    run_out(img_i,img_ly,args.max,args.min,args.version,scale)
 
 
 def main():
     parser=argparse.ArgumentParser(description='HANSEN COMPOSITE')
+    parser.add_argument('-v','--version',default=DEFAULT_VERSION,help='version')
     parser.add_argument('threshold',help='treecover 2000:\none of {}'.format(THRESHOLDS))
     subparsers=parser.add_subparsers()
     parser_inside=subparsers.add_parser('inside', help='export the zoomed in z-levels')
