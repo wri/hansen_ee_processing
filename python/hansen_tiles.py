@@ -136,7 +136,7 @@ def threshold_composite(threshold):
 def zlevel_asset_name(z):
     if VERSION: versioning='_v{}'.format(VERSION)
     else: versioning=''
-    return name='hansen{}_zlevel_{}'.format(versioning,z)
+    return 'hansen{}_zlevel_{}'.format(versioning,z)
 
 def zlevel_asset(z):
     return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(z)))
@@ -161,7 +161,7 @@ def _outside(args):
 
 def main():
     parser=argparse.ArgumentParser(description='HANSEN COMPOSITE')
-    parser.add_argument('threshold',help='treecover 2000 threshold pct: one of {}'.format(THRESHOLDS))
+    parser.add_argument('threshold',help='treecover 2000:\none of {}'.format(THRESHOLDS))
     subparsers=parser.add_subparsers()
     parser_inside=subparsers.add_parser('inside', help='export the zoomed in z-levels')
     parser_inside.add_argument('-max','--max',default=12,help='max level')
