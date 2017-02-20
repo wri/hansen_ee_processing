@@ -17,7 +17,7 @@ HANSEN_ZLEVEL_FOLDER='HansenZLevel'
 GCE_TILE_ROOT='Hansen14_15'
 THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_VERSION=1
-TEST_RUN=False
+TEST_RUN=True
 NOISY=True
 
 
@@ -75,10 +75,10 @@ def zjoin(img_i,img_ly):
 #
 # EXPORTERS
 #
-def export_tiles(image,z,v):
-    tiles_path=gce_tiles_path(v)
-    name=tiles_path.split('/')[-1]
-    print('tiles:',z,name,tiles_path)
+def export_tiles(image,z,v,threshold):
+    tiles_path=gce_tiles_path(v,threshold)
+    name=tiles_path.replace('/','__')
+    print('tiles:',z,tiles_path,name)
     if not TEST_RUN:
         task=ee.batch.Export.map.toCloudStorage(
             image=image, 
@@ -96,8 +96,8 @@ def export_tiles(image,z,v):
         return task
 
 
-def export_asset(image,z,v):
-    name=zlevel_asset_name(v,z)
+def export_asset(image,z,v,threshold):
+    name=zlevel_asset_name(v,z,threshold)
     print('asset:',z,name)
     if not TEST_RUN:
         task=ee.batch.Export.image.toAsset(
@@ -117,40 +117,40 @@ def export_asset(image,z,v):
 #
 # RUN
 #
-def run_in(img,maxz,minz,v,last_to_asset=False,scale=SCALE):
+def run_in(img,maxz,minz,v,threshold,last_to_asset=False,scale=SCALE):
     for z in range(maxz,minz-1,-1):
         zimg=zviz(img,z,scale)
-        task=export_tiles(zimg,z,v)
+        task=export_tiles(zimg,z,v,threshold)
     if last_to_asset:
         print 'export asset:',z
-        task=export_asset(zimg,z,v)
+        task=export_asset(zimg,z,v,threshold)
 
 
-def run_out(img_i,img_ly,maxz,minz,v,scale):
+def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
     for z in range(maxz,minz-1,-1):
         zimg_i=zintensity(img_i,z,scale,False)
         zimg_ly=zlossyear(img_ly,z,scale)
         zimg=zjoin(zimg_i,zimg_ly)
-        task=export_tiles(zimg,z,v)
+        task=export_tiles(zimg,z,v,threshold)
 
 
 #
 # PATH/IMG/IC HELPERS
 #
-def gce_tiles_path(v):
-    return '{}/tiles/{}'.format(GCE_TILE_ROOT,v)
+def gce_tiles_path(v,threshold):
+    return '{}/tiles/{}/{}'.format(GCE_TILE_ROOT,v,threshold)
 
 
 def threshold_composite(threshold):
     return ee.Image(HANSEN_COMPOSITE_IMG).select(['loss_{}'.format(threshold)])
 
 
-def zlevel_asset_name(v,z):
-    return 'hansen_v{}_zlevel_{}'.format(v,z)
+def zlevel_asset_name(v,z,threshold):
+    return 'hansen_v{}_z{}_tc{}'.format(v,z,threshold)
 
 
-def zlevel_asset(v,z):
-    return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(v,z)))
+def zlevel_asset(v,z,threshold):
+    return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(v,z,threshold)))
 
 
 #
@@ -159,16 +159,16 @@ def zlevel_asset(v,z):
 def _inside(args):
     hc=threshold_composite(args.threshold)
     hcz=ee.Image(0).where(hc,hc)
-    run_in(hcz,args.max,args.min,args.version,args.asset)
+    run_in(hcz,args.max,args.min,args.version,args.threshold,args.asset)
 
 
 def _outside(args):
     last_z=args.max+1
     scale=Z_LEVELS[last_z]
-    img=zlevel_asset(args.version,last_z)
+    img=zlevel_asset(args.version,last_z,args.threshold)
     img_i=img.select(['intensity'])
     img_ly=img.select(['lossyear'])
-    run_out(img_i,img_ly,args.max,args.min,args.version,scale)
+    run_out(img_i,img_ly,args.max,args.min,args.version,args.threshold,scale)
 
 
 def main():
