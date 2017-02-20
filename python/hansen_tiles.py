@@ -142,7 +142,8 @@ def gce_tiles_path(v,threshold):
 
 
 def threshold_composite(threshold):
-    return ee.Image(HANSEN_COMPOSITE_IMG).select(['loss_{}'.format(threshold)])
+    img_path='{}/{}'.format(PROJECT_ROOT,HANSEN_COMPOSITE_IMG)
+    return ee.Image(img_path).select(['loss_{}'.format(threshold)])
 
 
 def zlevel_asset_name(v,z,threshold):
