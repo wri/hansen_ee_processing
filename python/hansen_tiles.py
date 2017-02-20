@@ -162,16 +162,16 @@ def zlevel_asset(v,z,threshold):
 def _inside(args):
     hc=threshold_composite(args.threshold)
     hcz=ee.Image(0).where(hc,hc)
-    run_in(hcz,args.max,args.min,args.version,args.threshold,args.asset)
+    run_in(hcz,int(args.max),int(args.min),args.version,args.threshold,args.asset)
 
 
 def _outside(args):
-    last_z=args.max+1
+    last_z=int(args.max)+1
     scale=Z_LEVELS[last_z]
     img=zlevel_asset(args.version,last_z,args.threshold)
     img_i=img.select(['intensity'])
     img_ly=img.select(['lossyear'])
-    run_out(img_i,img_ly,args.max,args.min,args.version,args.threshold,scale)
+    run_out(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale)
 
 
 def main():
