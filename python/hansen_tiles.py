@@ -117,11 +117,11 @@ def export_asset(image,z,v,threshold):
 #
 # RUN
 #
-def run_in(img,maxz,minz,v,threshold,last_to_asset=False,scale=SCALE):
+def run_in(img,maxz,minz,v,threshold,last_to_asset='False',scale=SCALE):
     for z in range(maxz,minz-1,-1):
         zimg=zviz(img,z,scale)
         task=export_tiles(zimg,z,v,threshold)
-    if (not last_to_asset) or (last_to_asset.lower()=='false'):
+    if (not last_to_asset) or (isinstance(last_to_asset,str) and last_to_asset.lower()=='false'):
         print 'skiping inside-asset-export'
     else:
         print 'export asset:',z
@@ -182,7 +182,7 @@ def main():
     parser_inside=subparsers.add_parser('inside', help='export the zoomed in z-levels')
     parser_inside.add_argument('-max','--max',default=12,help='max level')
     parser_inside.add_argument('-min','--min',default=7,help='min level')
-    parser_inside.add_argument('-a','--asset',default=True,help='export min level to asset')
+    parser_inside.add_argument('-a','--asset',default='True',help='export min level to asset')
     parser_inside.set_defaults(func=_inside)
     parser_outside=subparsers.add_parser('outside', help='export the zoomed out z-levels')
     parser_outside.add_argument('-max','--max',default=6,help='max level')
