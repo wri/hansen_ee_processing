@@ -1,7 +1,7 @@
 import ee
 import os
 
-PEM='~/.config/secret/privatekey.pem'
+PEM='{}/.config/secret/privatekey.pem'.format(os.path.expanduser("~"))
 
 def init(user=None):
         sa=os.environ.get('SERVICE_ACCOUNT')
