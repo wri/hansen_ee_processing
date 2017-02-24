@@ -140,7 +140,7 @@ def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
 # PATH/IMG/IC HELPERS
 #
 def gce_tiles_path(v,threshold):
-    return '{}/tiles/{}/{}'.format(GCE_TILE_ROOT,v,threshold)
+    return '{}/tiles/v{}/tc{}'.format(GCE_TILE_ROOT,v,threshold)
 
 
 def threshold_composite(threshold):
