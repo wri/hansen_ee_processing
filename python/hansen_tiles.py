@@ -30,7 +30,7 @@ geom=None
 geom_name=None
 geoms_ft=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
 def get_geom(name):
-    return ee.Feature(geoms_ft.filter(ee.Filter.eq('name',name)).first())
+    return ee.Feature(geoms_ft.filter(ee.Filter.eq('name',name)).first()).geometry()
 
 
 #
