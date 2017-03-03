@@ -16,6 +16,7 @@ HANSEN_COMPOSITE_IMG='HansenComposite_14-15'
 HANSEN_ZLEVEL_FOLDER='HansenZLevel'
 GCE_TILE_ROOT='Hansen14_15'
 THRESHOLDS=[10,15,20,25,30,50,75]
+DEFAULT_GEOM_NAME='world'
 DEFAULT_VERSION=1
 TEST_RUN=False
 NOISY=True
@@ -23,17 +24,13 @@ Z_MAX=12
 
 
 #
-# HELPERS
+# GEOMETRY
 #
+geom=None
+geom_name=None
+geoms_ft=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
 def get_geom(name):
     return ee.Feature(geoms_ft.filter(ee.Filter.eq('name',name)).first())
-
-#
-# DATA
-#
-geoms_ft=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
-# world=get_geom('hansen_world').geometry()
-world=get_geom('se_asia').geometry()
 
 
 #
@@ -92,7 +89,7 @@ def export_tiles(image,z,v,threshold):
             writePublicTiles=True, 
             maxZoom=z, 
             minZoom=z, 
-            region=world.coordinates().getInfo(), 
+            region=geom.coordinates().getInfo(), 
             skipEmptyTiles=True
         )
         task.start()
@@ -110,7 +107,7 @@ def export_asset(image,z,v,threshold):
             assetId='{}/{}'.format(PROJECT_ROOT,name), 
             scale=Z_LEVELS[z], 
             crs=CRS, 
-            region=world.coordinates().getInfo(),
+            region=geom.coordinates().getInfo(),
             maxPixels=500000000
         )
         task.start()
@@ -144,7 +141,7 @@ def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
 # PATH/IMG/IC HELPERS
 #
 def gce_tiles_path(v,threshold):
-    return '{}/tiles/v{}/tc{}'.format(GCE_TILE_ROOT,v,threshold)
+    return '{}/tiles/{}/v{}/tc{}'.format(GCE_TILE_ROOT,geom_name,v,threshold)
 
 
 def threshold_composite(threshold):
@@ -179,7 +176,9 @@ def _outside(args):
 
 
 def main():
+    global geom_name, geom
     parser=argparse.ArgumentParser(description='HANSEN COMPOSITE')
+    parser.add_argument('-g','--geom_name',default=DEFAULT_GEOM_NAME,help='geometry name (https://fusiontables.google.com/DataSource?docid=13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI)')
     parser.add_argument('-v','--version',default=DEFAULT_VERSION,help='version')
     parser.add_argument('threshold',help='treecover 2000:\none of {}'.format(THRESHOLDS))
     subparsers=parser.add_subparsers()
@@ -193,10 +192,12 @@ def main():
     parser_outside.add_argument('-min','--min',default=2,help='min level')
     parser_outside.set_defaults(func=_outside)
     args=parser.parse_args()
-    if int(args.threshold) in THRESHOLDS: args.func(args)
-    else: print 'INVALID THRESHOLD:',args.threshold,args
-
-    
+    if int(args.threshold) in THRESHOLDS: 
+        geom_name=args.geom_name
+        geom=get_geom(geom_name)
+        args.func(args)
+    else: 
+        print 'INVALID THRESHOLD:',args.threshold,args
 
 
 if __name__ == "__main__":
