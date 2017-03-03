@@ -19,6 +19,7 @@ THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_VERSION=1
 TEST_RUN=False
 NOISY=True
+Z_MAX=12
 
 
 #
@@ -31,7 +32,8 @@ def get_geom(name):
 # DATA
 #
 geoms_ft=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
-world=get_geom('hansen_world').geometry()
+# world=get_geom('hansen_world').geometry()
+world=get_geom('se_asia').geometry()
 
 
 #
@@ -39,29 +41,31 @@ world=get_geom('hansen_world').geometry()
 #
 def zintensity(img,z,scale=SCALE,thresh_full=True):
     if thresh_full: img=img.gt(0).multiply(FULL_INTENSITY)
-    return img.reproject(
-                            scale=scale,
-                            crs=CRS
-                    ).reduceResolution(
-                            reducer=ee.Reducer.mean(),
-                            maxPixels=MAX_PIXS
-                    ).reproject(
-                            scale=Z_LEVELS[z],
-                            crs=CRS
-                    )
+    img=img.mask(img.gt(0))
+    reducer=ee.Reducer.mean()
+    return reduce(img,z,scale,reducer)
 
 
 def zlossyear(img,z,scale=SCALE):
-    return img.mask(img.gt(0)).reproject(
-                            scale=scale,
-                            crs=CRS
-                    ).reduceResolution(
-                            reducer=ee.Reducer.mode(),
-                            maxPixels=MAX_PIXS
-                    ).reproject(
-                            scale=Z_LEVELS[z],
-                            crs=CRS
-                    )
+    img=img.mask(img.gt(0))
+    reducer=ee.Reducer.mode()
+    return reduce(img,z,scale,reducer)
+
+
+def reduce(img,z,scale,reducer):
+    if (z==Z_MAX): 
+        return img
+    else:
+        return img.reproject(
+                    scale=scale,
+                    crs=CRS
+            ).reduceResolution(
+                    reducer=reducer,
+                    maxPixels=MAX_PIXS
+            ).reproject(
+                    scale=Z_LEVELS[z],
+                    crs=CRS
+            )
 
 
 def zviz(img,z,scale=SCALE):
