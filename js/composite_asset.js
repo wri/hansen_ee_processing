@@ -5,6 +5,7 @@ var h14=ee.Image('UMD/hansen/global_forest_change_2015')
 //
 var CRS="EPSG:4326"
 var SCALE=27.829872698318393
+var COMPOSITE_IMG_NAME='HansenComposite_14-15-new'
 
 //
 // FUSION TABLE GEOMS
@@ -16,7 +17,9 @@ var get_flat_geom=function(name){
 var world_geom=get_flat_geom('hansen_world')
 var geom_14=get_flat_geom('hansen_14')
 var geom_15=get_flat_geom('hansen_15')
-
+// Map.addLayer(world_geom)
+Map.addLayer(geom_14,null,'geom_14')
+Map.addLayer(geom_15,null,'geom_15')
 
 //
 // Hansen 2014 Data
@@ -42,8 +45,8 @@ var ly=ee.ImageCollection([ly15,ly14]).reduce(ee.Reducer.firstNonNull()).rename(
 // // Map
 // //
 // Map.addLayer(ly,{palette:['ff0000'],min:0, max:15},'ly')
-// Map.addLayer(ly14.mask(ly14),{palette:['00ff00'],min:0, max:15},'ly14')
-// Map.addLayer(ly15.mask(ly15),{palette:['0000ff'],min:0, max:15},'ly15')
+Map.addLayer(ly14.mask(ly14),{palette:['00ff00'],min:0, max:15},'ly14')
+Map.addLayer(ly15.mask(ly15),{palette:['0000ff'],min:0, max:15},'ly15')
 
 //
 // Thresholding
@@ -61,20 +64,20 @@ for (var i=0; i<thresholds.length; i++) {
   threshold_images.push(loss(thresholds[i]))
 }
 var threshold_image=ee.Image(threshold_images)
-
-print(threshold_image)
+// print(threshold_image)
 
 //
 // GAIN (from old asset)
 //
 var hgain=ee.Image('HANSEN/gfw2015_loss_tree_gain_threshold').select(['gain'])
-print(hgain)
+// print(hgain)
 
 //
 // FINAL IMAGE
 //
 var hansen_composite=threshold_image.addBands([hgain])
-Map.addLayer(hansen_composite)
+Map.addLayer(hansen_composite,null,'HansenComposite')
+print(hansen_composite)
 
 
 //
@@ -111,4 +114,5 @@ var export_asset=function(img,name){
   })
 }
 
-export_asset(hansen_composite,'HansenComposite_14-15')
+export_asset(hansen_composite,COMPOSITE_IMG_NAME)
+

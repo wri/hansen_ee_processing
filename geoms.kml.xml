@@ -1,6 +1,8 @@
+<!--------
 #
 # h14
 #
+---------->
 <Polygon>
   <outerBoundaryIs>
     <LinearRing>
@@ -30,9 +32,11 @@
 </Polygon>
 
 
+<!--------
 #
 # h15
 #
+---------->
 <Polygon>
   <outerBoundaryIs>
     <LinearRing>
