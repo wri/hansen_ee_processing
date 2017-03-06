@@ -104,7 +104,7 @@ def export_asset(image,z,v,threshold):
         task=ee.batch.Export.image.toAsset(
             image=image, 
             description=name, 
-            assetId='{}/{}'.format(PROJECT_ROOT,name), 
+            assetId='{}/{}/{}'.format(PROJECT_ROOT,HANSEN_ZLEVEL_FOLDER,name), 
             scale=Z_LEVELS[z], 
             crs=CRS, 
             region=geom.coordinates().getInfo(),
@@ -135,6 +135,12 @@ def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
         zimg_ly=zlossyear(img_ly,z,scale)
         zimg=zjoin(zimg_i,zimg_ly)
         task=export_tiles(zimg,z,v,threshold)
+
+
+def run_zasset(img,z,v,threshold,scale=SCALE):
+    zimg=zviz(img,z,scale)
+    print 'export asset:',z
+    task=export_asset(zimg,z,v,threshold)    
 
 
 #
@@ -175,6 +181,12 @@ def _outside(args):
     run_out(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale)
 
 
+def _zasset(args):
+    hc=threshold_composite(args.threshold)
+    hcz=ee.Image(0).where(hc,hc)
+    run_zasset(hcz,int(args.z_level),args.version,args.threshold)
+
+
 def main():
     global geom_name, geom
     parser=argparse.ArgumentParser(description='HANSEN COMPOSITE')
@@ -191,6 +203,9 @@ def main():
     parser_outside.add_argument('-max','--max',default=6,help='max level')
     parser_outside.add_argument('-min','--min',default=2,help='min level')
     parser_outside.set_defaults(func=_outside)
+    parser_zasset=subparsers.add_parser('zasset', help='export z-level to asset')
+    parser_zasset.add_argument('-z','--z_level',default=7,help='max level')
+    parser_zasset.set_defaults(func=_zasset)
     args=parser.parse_args()
     if int(args.threshold) in THRESHOLDS: 
         geom_name=args.geom_name
