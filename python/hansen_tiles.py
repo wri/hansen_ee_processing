@@ -160,7 +160,7 @@ def zlevel_asset_name(v,z,threshold):
 
 
 def zlevel_asset(v,z,threshold):
-    return ee.Image('{}/{}'.format(PROJECT_ROOT,zlevel_asset_name(v,z,threshold)))
+    return ee.Image('{}/{}/{}'.format(PROJECT_ROOT,HANSEN_ZLEVEL_FOLDER,zlevel_asset_name(v,z,threshold)))
 
 
 #
