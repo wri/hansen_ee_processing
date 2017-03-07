@@ -37,13 +37,15 @@ def get_geom(name):
 # Methods:
 #
 def zintensity(img,z,scale=SCALE,thresh_full=True):
-    if thresh_full: img=img.gt(0).multiply(FULL_INTENSITY)
+    if thresh_full: 
+        img=img.gt(0).multiply(FULL_INTENSITY)
+        img=img.updateMask(img.gt(0))
     reducer=ee.Reducer.mean()
     return reduce(img,z,scale,reducer)
 
 
 def zlossyear(img,z,scale=SCALE):
-    img=img.mask(img.gt(0))
+    img=img.updateMask(img.gt(0))
     reducer=ee.Reducer.mode()
     return reduce(img,z,scale,reducer)
 
