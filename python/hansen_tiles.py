@@ -38,6 +38,9 @@ def get_geom(name):
 # Methods:
 #
 def zintensity(img,z,scale=SCALE):
+    if (z==Z_MAX): 
+        img=img.gt(0).multiply(FULL_INTENSITY)
+        img=img.updateMask(img.gt(0))
     reducer=ee.Reducer.mean()
     return reduce(img,z,scale,reducer)
 
@@ -50,8 +53,6 @@ def zlossyear(img,z,scale=SCALE):
 
 def reduce(img,z,scale,reducer):
     if (z==Z_MAX): 
-        img=img.gt(0).multiply(FULL_INTENSITY)
-        img=img.updateMask(img.gt(0))
         return img
     else:
         return img.reproject(
