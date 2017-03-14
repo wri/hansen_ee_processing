@@ -37,10 +37,7 @@ def get_geom(name):
 #
 # Methods:
 #
-def zintensity(img,z,scale=SCALE,thresh_full=True):
-    if thresh_full: 
-        img=img.gt(0).multiply(FULL_INTENSITY)
-        img=img.updateMask(img.gt(0))
+def zintensity(img,z,scale=SCALE):
     reducer=ee.Reducer.mean()
     return reduce(img,z,scale,reducer)
 
@@ -53,6 +50,8 @@ def zlossyear(img,z,scale=SCALE):
 
 def reduce(img,z,scale,reducer):
     if (z==Z_MAX): 
+        img=img.gt(0).multiply(FULL_INTENSITY)
+        img=img.updateMask(img.gt(0))
         return img
     else:
         return img.reproject(
@@ -133,7 +132,7 @@ def run_in(img,maxz,minz,v,threshold,last_to_asset='False',scale=SCALE):
 
 def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
     for z in range(maxz,minz-1,-1):
-        zimg_i=zintensity(img_i,z,scale,False)
+        zimg_i=zintensity(img_i,z,scale)
         zimg_ly=zlossyear(img_ly,z,scale)
         zimg=zjoin(zimg_i,zimg_ly)
         task=export_tiles(zimg,z,v,threshold)
