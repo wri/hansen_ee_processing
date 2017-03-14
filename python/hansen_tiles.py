@@ -85,7 +85,7 @@ def export_tiles(image,z,v,threshold):
         task=ee.batch.Export.map.toCloudStorage(
             image=image, 
             description='{}__{}'.format(name,z), 
-            bucket='forma-public', 
+            bucket='wri-public', 
             path=tiles_path, 
             writePublicTiles=True, 
             maxZoom=z, 
