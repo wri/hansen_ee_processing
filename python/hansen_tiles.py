@@ -161,7 +161,7 @@ def zlevel_asset(v,z,threshold):
 # MAIN
 #
 def _inside(args):
-    img_i, img_ly=_hansen_itensity_lossyear(args.threshold)
+    img_i, img_ly=_hansen_intensity_lossyear(args.threshold)
     run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,lowest_to_asset=args.asset)
 
 
@@ -175,11 +175,11 @@ def _outside(args):
 
 
 def _zasset(args):
-    img_i, img_ly=_hansen_itensity_lossyear(args.threshold)
+    img_i, img_ly=_hansen_intensity_lossyear(args.threshold)
     run_zasset(img_i,img_ly,int(args.z_level),args.version,args.threshold)
 
 
-def _hansen_itensity_lossyear(threshold):
+def _hansen_intensity_lossyear(threshold):
     hc=threshold_composite(threshold)
     hcz=ee.Image(0).where(hc,hc)
     return hcz.gt(0).multiply(FULL_INTENSITY), hcz
