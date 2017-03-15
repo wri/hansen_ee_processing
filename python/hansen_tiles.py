@@ -38,8 +38,6 @@ def get_geom(name):
 # Methods:
 #
 def zintensity(img,z,scale=SCALE):
-    if (z==Z_MAX): 
-        img=img.gt(0).multiply(FULL_INTENSITY)
     reducer=ee.Reducer.mean()
     return reduce(img,z,scale,reducer)
 
@@ -64,10 +62,6 @@ def reduce(img,z,scale,reducer):
                     scale=Z_LEVELS[z],
                     crs=CRS
             )
-
-
-def zviz(img,z,scale=SCALE):
-    return zintensity(img,z,scale).addBands([ee.Image(0),zlossyear(img,z,scale)]).toInt().rename(BANDS)
 
 
 def zjoin(img_i,img_ly):
@@ -119,9 +113,11 @@ def export_asset(image,z,v,threshold):
 #
 # RUN
 #
-def run_in(img,maxz,minz,v,threshold,last_to_asset='False',scale=SCALE):
+def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,last_to_asset='False'):
     for z in range(maxz,minz-1,-1):
-        zimg=zviz(img,z,scale)
+        zimg_i=zintensity(img_i,z,scale)
+        zimg_ly=zlossyear(img_ly,z,scale)
+        zimg=zjoin(zimg_i,zimg_ly)
         task=export_tiles(zimg,z,v,threshold)
     if (not last_to_asset) or (isinstance(last_to_asset,str) and last_to_asset.lower()=='false'):
         print 'skiping inside-asset-export'
@@ -130,18 +126,12 @@ def run_in(img,maxz,minz,v,threshold,last_to_asset='False',scale=SCALE):
         task=export_asset(zimg,z,v,threshold)
 
 
-def run_out(img_i,img_ly,maxz,minz,v,threshold,scale):
-    for z in range(maxz,minz-1,-1):
-        zimg_i=zintensity(img_i,z,scale)
-        zimg_ly=zlossyear(img_ly,z,scale)
-        zimg=zjoin(zimg_i,zimg_ly)
-        task=export_tiles(zimg,z,v,threshold)
-
-
-def run_zasset(img,z,v,threshold,scale=SCALE):
-    zimg=zviz(img,z,scale)
+def run_zasset(img_i,img_ly,z,v,threshold,scale=SCALE):
+    zimg_i=zintensity(img_i,z,scale)
+    zimg_ly=zlossyear(img_ly,z,scale)
+    zimg=zjoin(zimg_i,zimg_ly)
     print 'export asset:',z
-    task=export_asset(zimg,z,v,threshold)    
+    task=export_tiles(zimg,z,v,threshold)
 
 
 #
@@ -170,9 +160,8 @@ def zlevel_asset(v,z,threshold):
 # MAIN
 #
 def _inside(args):
-    hc=threshold_composite(args.threshold)
-    hcz=ee.Image(0).where(hc,hc)
-    run_in(hcz,int(args.max),int(args.min),args.version,args.threshold,args.asset)
+    img_i, img_ly=_hansen_itensity_lossyear(args.threshold)
+    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,last_to_asset=args.asset)
 
 
 def _outside(args):
@@ -181,13 +170,18 @@ def _outside(args):
     img=zlevel_asset(args.version,last_z,args.threshold)
     img_i=img.select(['intensity'])
     img_ly=img.select(['lossyear'])
-    run_out(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale)
+    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale,False)
 
 
 def _zasset(args):
-    hc=threshold_composite(args.threshold)
+    img_i, img_ly=_hansen_itensity_lossyear(args.threshold)
+    run_zasset(img_i,img_ly,int(args.z_level),args.version,args.threshold)
+
+
+def _hansen_itensity_lossyear(threshold):
+    hc=threshold_composite(threshold)
     hcz=ee.Image(0).where(hc,hc)
-    run_zasset(hcz,int(args.z_level),args.version,args.threshold)
+    return hcz.gt(0).multiply(FULL_INTENSITY), hcz
 
 
 def main():
