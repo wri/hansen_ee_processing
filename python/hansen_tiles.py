@@ -113,17 +113,18 @@ def export_asset(image,z,v,threshold):
 #
 # RUN
 #
-def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,last_to_asset='False'):
-    for z in range(maxz,minz-1,-1):
+def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
+    for z in range(minz,maxz+1):
         zimg_i=zintensity(img_i,z,scale)
         zimg_ly=zlossyear(img_ly,z,scale)
         zimg=zjoin(zimg_i,zimg_ly)
+        if z==minz:
+            if (not lowest_to_asset) or (isinstance(lowest_to_asset,str) and lowest_to_asset.lower()=='false'):
+                print 'skiping inside-asset-export'
+            else:
+                print 'export asset:',z
+                task=export_asset(zimg,z,v,threshold)
         task=export_tiles(zimg,z,v,threshold)
-    if (not last_to_asset) or (isinstance(last_to_asset,str) and last_to_asset.lower()=='false'):
-        print 'skiping inside-asset-export'
-    else:
-        print 'export asset:',z
-        task=export_asset(zimg,z,v,threshold)
 
 
 def run_zasset(img_i,img_ly,z,v,threshold,scale=SCALE):
@@ -161,7 +162,7 @@ def zlevel_asset(v,z,threshold):
 #
 def _inside(args):
     img_i, img_ly=_hansen_itensity_lossyear(args.threshold)
-    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,last_to_asset=args.asset)
+    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,lowest_to_asset=args.asset)
 
 
 def _outside(args):
