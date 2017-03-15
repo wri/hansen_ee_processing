@@ -40,7 +40,6 @@ def get_geom(name):
 def zintensity(img,z,scale=SCALE):
     if (z==Z_MAX): 
         img=img.gt(0).multiply(FULL_INTENSITY)
-        img=img.updateMask(img.gt(0))
     reducer=ee.Reducer.mean()
     return reduce(img,z,scale,reducer)
 
