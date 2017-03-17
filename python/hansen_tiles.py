@@ -77,7 +77,8 @@ def export_tiles(image,z,v,threshold):
     print('tiles:',z,tiles_path,name)
     if not TEST_RUN:
         task=ee.batch.Export.map.toCloudStorage(
-            image=image, 
+            fileFormat='png',
+            image=image.unmask(0).updateMask(1),
             description='{}__{}'.format(name,z), 
             bucket='wri-public', 
             path=tiles_path, 
