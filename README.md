@@ -20,7 +20,7 @@ To re-generate this asset simply run the code. The current [Hansen Asset](https:
 Due to the earthengine limits discussed [here](https://groups.google.com/forum/#!topic/google-earth-engine-developers/wU4NNoWTD70) tile processing happens in 2 (and a half) steps:
 
 1. Export Tiles for zoom-levels 12-7, and export an earthengine asset for zoom-level 7
-2. Export Tiles for zoom-levels 7-2
+2. Export Tiles for zoom-levels 6-2
 
 The code can be run via the command line:
 
