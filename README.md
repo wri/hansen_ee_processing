@@ -5,7 +5,7 @@ Hansen Tiles are generated from an EarthEngine asset whose various bands contain
 This repo contains:
 
 * [hansen\_ee\_processing/js/composite_asset.js](#hasset): javascript code to produce the most recent version of the Hansen Asset described above
-* [hansen\_ee\_processing/python/hansen_tiles.py](#htiles):
+* [hansen\_ee\_processing/python/hansen_tiles.py](#htiles): python script that generates the hansen tiles (in 2 steps).
 
 ---
 <a name='hasset'></a>
