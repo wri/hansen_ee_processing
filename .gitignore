@@ -25,3 +25,6 @@ MANIFEST
 
 # SECRETS
 privatekey.pem
+
+# codebase
+api_tests.py
