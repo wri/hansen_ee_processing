@@ -28,11 +28,11 @@ The code can be run via the command line:
 # step 1
 $ python hansen_tiles.py inside
 
-# step 2 (after the earth engine asset for zoom-level 7 has completed processing)
+# step 2 (after the earthengine asset for zoom-level 7 has completed processing)
 $ python hansen_tiles.py outside
 ```
 
-There are various options like runing over test geometries, changing the versioning, changing the zoom-level used as a break between step 1 and 2, and more.
+There are various options like using test geometries, versioning, changing the zoom-level used as a break between step 1 and 2, and more.
 
 ```bash
 python|master $ python hansen_tiles.py -h
