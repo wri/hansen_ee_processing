@@ -26,10 +26,10 @@ The code can be run via the command line:
 
 ```bash
 # step 1
-$ python {threshold} hansen_tiles.py inside
+$ python hansen_tiles.py {threshold} inside
 
 # step 2 (after the earthengine asset for zoom-level 7 has completed processing)
-$ python {threshold} hansen_tiles.py outside
+$ python hansen_tiles.py {threshold} outside
 ```
 
 There are various options like using test geometries, versioning, changing the zoom-level used as a break between step 1 and 2, and more.
