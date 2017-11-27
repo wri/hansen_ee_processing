@@ -8,14 +8,14 @@ gee.init()
 #
 CRS="EPSG:4326"
 SCALE=27.829872698318393
-Z_LEVELS=[156000,78000,39000,20000,10000,4900,2400,1200,611,305,152,76,38]
+Z_LEVELS=[156000,78000,39000,20000,10000,4900,2400,1200,611,305,152,76,38,19]
 MAX_PIXS=65500
 FULL_INTENSITY=255
-BANDS=['intensity','blank','lossyear']
+BANDS=['intensity','class','lossyear']
 PROJECT_ROOT='projects/wri-datalab'
-HANSEN_COMPOSITE_IMG='HansenComposite_14-15'
-HANSEN_ZLEVEL_FOLDER='HansenZLevel'
-GCE_TILE_ROOT='Hansen14_15'
+HANSEN_COMPOSITE_IMG='HansenComposite_16'
+HANSEN_ZLEVEL_FOLDER='NANCY_Z'
+GCE_TILE_ROOT='lossyear_classification_map/gfw'
 THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_GEOM_NAME='hansen_world'
 DEFAULT_VERSION=1
@@ -23,6 +23,9 @@ TEST_RUN=False
 NOISY=True
 Z_MAX=12
 
+CAT_IMG='projects/wri-datalab/Goode_FinalClassification_15_50uncertain_expanded_wgs84'
+
+category=ee.Image(CAT_IMG).rename(['class'])
 
 #
 # GEOMETRY
@@ -42,7 +45,7 @@ def zintensity(img,z,scale=SCALE):
     return reduce(img,z,scale,reducer)
 
 
-def zlossyear(img,z,scale=SCALE):
+def zmode(img,z,scale=SCALE):
     img=img.updateMask(img.gt(0))
     reducer=ee.Reducer.mode()
     return reduce(img,z,scale,reducer)
@@ -64,8 +67,8 @@ def reduce(img,z,scale,reducer):
             )
 
 
-def zjoin(img_i,img_ly):
-    return img_i.addBands([ee.Image(0),img_ly]).toInt().rename(BANDS)
+def zjoin(img_i,img_cat,img_ly):
+    return img_i.addBands([img_cat,img_ly]).toInt().rename(BANDS)
 
 
 #
@@ -75,14 +78,15 @@ def export_tiles(image,z,v,threshold):
     tiles_path=gce_tiles_path(v,threshold)
     name=tiles_path.replace('/','__')
     print('tiles:',z,tiles_path,name)
+    image=image.unmask(0).updateMask(1)
     if not TEST_RUN:
         task=ee.batch.Export.map.toCloudStorage(
             fileFormat='png',
-            image=image.unmask(0).updateMask(1),
+            image=image,
             description='{}__{}'.format(name,z), 
             bucket='wri-public', 
             path=tiles_path, 
-            writePublicTiles=True, 
+            writePublicTiles=False, 
             maxZoom=z, 
             minZoom=z, 
             region=geom.coordinates().getInfo(), 
@@ -114,11 +118,12 @@ def export_asset(image,z,v,threshold):
 #
 # RUN
 #
-def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
+def run(img_i,img_cat,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
     for z in range(minz,maxz+1):
         zimg_i=zintensity(img_i,z,scale)
-        zimg_ly=zlossyear(img_ly,z,scale)
-        zimg=zjoin(zimg_i,zimg_ly)
+        zimg_cat=zmode(img_cat,z,scale)
+        zimg_ly=zmode(img_ly,z,scale)
+        zimg=zjoin(zimg_i,zimg_cat,zimg_ly)
         if z==minz:
             if (not lowest_to_asset) or (isinstance(lowest_to_asset,str) and lowest_to_asset.lower()=='false'):
                 print 'skiping inside-asset-export'
@@ -128,10 +133,11 @@ def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
         task=export_tiles(zimg,z,v,threshold)
 
 
-def run_zasset(img_i,img_ly,z,v,threshold,scale=SCALE):
+def run_zasset(img_i,img_cat,img_cat,img_ly,z,v,threshold,scale=SCALE):
     zimg_i=zintensity(img_i,z,scale)
-    zimg_ly=zlossyear(img_ly,z,scale)
-    zimg=zjoin(zimg_i,zimg_ly)
+    zimg_cat=zmode(img_cat,z,scale)
+    zimg_ly=zmode(img_ly,z,scale)
+    zimg=zjoin(zimg_i,zimg_cat,zimg_ly)
     print 'export asset:',z
     task=export_tiles(zimg,z,v,threshold)
 
@@ -163,7 +169,7 @@ def zlevel_asset(v,z,threshold):
 #
 def _inside(args):
     img_i, img_ly=_hansen_intensity_lossyear(args.threshold)
-    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,lowest_to_asset=args.asset)
+    run(img_i,category,img_ly,int(args.max),int(args.min),args.version,args.threshold,lowest_to_asset=args.asset)
 
 
 def _outside(args):
@@ -172,12 +178,12 @@ def _outside(args):
     img=zlevel_asset(args.version,last_z,args.threshold)
     img_i=img.select(['intensity'])
     img_ly=img.select(['lossyear'])
-    run(img_i,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale,False)
+    run(img_i,category,img_ly,int(args.max),int(args.min),args.version,args.threshold,scale,False)
 
 
 def _zasset(args):
     img_i, img_ly=_hansen_intensity_lossyear(args.threshold)
-    run_zasset(img_i,img_ly,int(args.z_level),args.version,args.threshold)
+    run_zasset(img_i,category,img_ly,int(args.z_level),args.version,args.threshold)
 
 
 def _hansen_intensity_lossyear(threshold):
