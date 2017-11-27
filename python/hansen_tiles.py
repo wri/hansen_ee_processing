@@ -133,7 +133,7 @@ def run(img_i,img_cat,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='
         task=export_tiles(zimg,z,v,threshold)
 
 
-def run_zasset(img_i,img_cat,img_cat,img_ly,z,v,threshold,scale=SCALE):
+def run_zasset(img_i,img_cat,img_ly,z,v,threshold,scale=SCALE):
     zimg_i=zintensity(img_i,z,scale)
     zimg_cat=zmode(img_cat,z,scale)
     zimg_ly=zmode(img_ly,z,scale)
