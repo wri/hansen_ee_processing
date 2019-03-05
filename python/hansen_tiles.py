@@ -18,12 +18,14 @@ HANSEN_ZLEVEL_FOLDER='NANCY_Z'
 GCE_TILE_ROOT='lossyear_classification_map/gfw'
 THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_GEOM_NAME='hansen_world'
-DEFAULT_VERSION=1
+DEFAULT_VERSION=2
 TEST_RUN=False
 NOISY=True
 Z_MAX=12
 
-CAT_IMG='projects/wri-datalab/Goode_FinalClassification_15_50uncertain_expanded_wgs84'
+CAT_IMG_4_CATEGORIES='projects/wri-datalab/Goode_FinalClassification_15_50uncertain_expanded_wgs84'
+CAT_IMG_6_CATEGORIES='projects/wri-datalab/Goode_FinalClassification_17_05pcnt_wgs84'
+CAT_IMG=CAT_IMG_6_CATEGORIES
 
 category=ee.Image(CAT_IMG).rename(['class'])
 
