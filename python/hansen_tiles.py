@@ -13,9 +13,9 @@ MAX_PIXS=65500
 FULL_INTENSITY=255
 BANDS=['intensity','blank','lossyear']
 PROJECT_ROOT='projects/wri-datalab'
-HANSEN_COMPOSITE_IMG='HansenComposite_14-15'
+HANSEN_COMPOSITE_IMG='HansenComposite_18'
 HANSEN_ZLEVEL_FOLDER='HansenZLevel'
-GCE_TILE_ROOT='Hansen14_15'
+GCE_TILE_ROOT='Hansen18'
 THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_GEOM_NAME='hansen_world'
 DEFAULT_VERSION=1
@@ -121,9 +121,9 @@ def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
         zimg=zjoin(zimg_i,zimg_ly)
         if z==minz:
             if (not lowest_to_asset) or (isinstance(lowest_to_asset,str) and lowest_to_asset.lower()=='false'):
-                print 'skiping inside-asset-export'
+                print('skiping inside-asset-export')
             else:
-                print 'export asset:',z
+                print('export asset:',z)
                 task=export_asset(zimg,z,v,threshold)
         task=export_tiles(zimg,z,v,threshold)
 
