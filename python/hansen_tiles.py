@@ -89,7 +89,7 @@ def export_tiles(image,z,v,threshold):
             skipEmptyTiles=True
         )
         task.start()
-        if NOISY: print task.status()
+        if NOISY: print(task.status())
         return task
 
 
@@ -107,7 +107,7 @@ def export_asset(image,z,v,threshold):
             maxPixels=500000000
         )
         task.start()
-        if NOISY: print task.status()
+        if NOISY: print(task.status())
         return task
 
 
@@ -132,7 +132,7 @@ def run_zasset(img_i,img_ly,z,v,threshold,scale=SCALE):
     zimg_i=zintensity(img_i,z,scale)
     zimg_ly=zlossyear(img_ly,z,scale)
     zimg=zjoin(zimg_i,zimg_ly)
-    print 'export asset:',z
+    print('export asset:',z)
     task=export_tiles(zimg,z,v,threshold)
 
 
@@ -211,7 +211,7 @@ def main():
         geom=get_geom(geom_name)
         args.func(args)
     else: 
-        print 'INVALID THRESHOLD:',args.threshold,args
+        print('INVALID THRESHOLD:',args.threshold,args)
 
 
 if __name__ == "__main__":
