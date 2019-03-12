@@ -1,5 +1,16 @@
 var geoms=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
-var h18=ee.Image('users/potapovpeter/GFW2018')
+
+//
+// LOSS
+//
+var h18=ee.Image('users/potapovpeter/GFW18')
+
+//
+// TCD and GAIN (from old asset)
+//
+var h14=ee.Image('UMD/hansen/global_forest_change_2015')
+var hgain=ee.Image('HANSEN/gfw2015_loss_tree_gain_threshold').select(['gain'])
+
 //
 // SETUP
 //
@@ -16,13 +27,8 @@ var get_flat_geom=function(name){
 }
 var world_geom=get_flat_geom('hansen_world')
 
-
-//
-// Hansen 2014 Data
-//
-var tc=h18.select(['treecover2000'])
-var ly=h18.select(['loss2001-2018']).rename(['lossyear'])
-
+var tc=h14.select(['treecover2000'])
+var ly=h18.select(['b1']).rename(['lossyear'])
 
 
 //
@@ -43,11 +49,6 @@ for (var i=0; i<thresholds.length; i++) {
 var threshold_image=ee.Image(threshold_images)
 // print(threshold_image)
 
-//
-// GAIN (from old asset)
-//
-var hgain=ee.Image('HANSEN/gfw2015_loss_tree_gain_threshold').select(['gain'])
-// print(hgain)
 
 //
 // FINAL IMAGE
