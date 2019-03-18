@@ -1,11 +1,22 @@
 var geoms=ee.FeatureCollection('ft:13BvM9v1Rzr90Ykf1bzPgbYvbb8kGSvwyqyDwO8NI')
+
+//
+// LOSS
+//
+var h18=ee.Image('users/potapovpeter/GFW18')
+
+//
+// TCD and GAIN (from old asset)
+//
 var h14=ee.Image('UMD/hansen/global_forest_change_2015')
+var hgain=ee.Image('HANSEN/gfw2015_loss_tree_gain_threshold').select(['gain'])
+
 //
 // SETUP
 //
 var CRS="EPSG:4326"
 var SCALE=27.829872698318393
-var COMPOSITE_IMG_NAME='HansenComposite_14-15-new'
+var COMPOSITE_IMG_NAME='HansenComposite_18'
 
 //
 // FUSION TABLE GEOMS
@@ -15,38 +26,10 @@ var get_flat_geom=function(name){
   return ee.Geometry.Polygon(coords,null,false)
 }
 var world_geom=get_flat_geom('hansen_world')
-var geom_14=get_flat_geom('hansen_14')
-var geom_15=get_flat_geom('hansen_15')
-// Map.addLayer(world_geom)
-Map.addLayer(geom_14,null,'geom_14')
-Map.addLayer(geom_15,null,'geom_15')
 
-//
-// Hansen 2014 Data
-//
 var tc=h14.select(['treecover2000'])
-var ly14=h14.select(['lossyear']).clip(geom_14).rename(['lossyear'])
-ly14=ly14.mask(ly14)
+var ly=h18.select(['b1']).rename(['lossyear'])
 
-
-//
-// Hansen 2015 Data
-//
-var sea_aus=ee.Image('users/amkrylov/Loss2015/SEAAUS_loss_2000-2015')
-var sa_a=ee.Image('users/amkrylov/Loss2015/Loss2015')
-var ly15=ee.ImageCollection([sea_aus,sa_a]).reduce(ee.Reducer.max(),4).rename(['lossyear']).clip(geom_15)
-
-//
-// CompositeData 14-15
-//
-var ly=ee.ImageCollection([ly15,ly14]).reduce(ee.Reducer.firstNonNull()).rename(['lossyear'])
-
-// //
-// // Map
-// //
-// Map.addLayer(ly,{palette:['ff0000'],min:0, max:15},'ly')
-Map.addLayer(ly14.mask(ly14),{palette:['00ff00'],min:0, max:15},'ly14')
-Map.addLayer(ly15.mask(ly15),{palette:['0000ff'],min:0, max:15},'ly15')
 
 //
 // Thresholding
@@ -66,11 +49,6 @@ for (var i=0; i<thresholds.length; i++) {
 var threshold_image=ee.Image(threshold_images)
 // print(threshold_image)
 
-//
-// GAIN (from old asset)
-//
-var hgain=ee.Image('HANSEN/gfw2015_loss_tree_gain_threshold').select(['gain'])
-// print(hgain)
 
 //
 // FINAL IMAGE

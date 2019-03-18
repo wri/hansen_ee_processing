@@ -9,8 +9,8 @@ This repo contains:
 
 ---
 <a name='hasset'></a>
-#### Hansen Composite 14-15
-To re-generate this asset simply run the code. The current [Hansen Asset](https://code.earthengine.google.com/?asset=projects/wri-datalab/HansenComposite_14-15) is unique because it merges data from Hansen 2014 and Hansen 2015. Therefore process probably won't need to be repeated.  That said, the second half of the code, starting around [here](https://github.com/wri/hansen_ee_processing/blob/master/js/composite_asset.js#L52) could easily be modified to create future assets.
+#### Hansen Composite 18
+To re-generate this asset simply run the code. To update future years, simply replace loss asset and rename final output `COMPOSITE_IMG_NAME`.
 
 
 ---

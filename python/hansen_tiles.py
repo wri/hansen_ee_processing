@@ -13,9 +13,9 @@ MAX_PIXS=65500
 FULL_INTENSITY=255
 BANDS=['intensity','blank','lossyear']
 PROJECT_ROOT='projects/wri-datalab'
-HANSEN_COMPOSITE_IMG='HansenComposite_14-15'
-HANSEN_ZLEVEL_FOLDER='HansenZLevel'
-GCE_TILE_ROOT='Hansen14_15'
+HANSEN_COMPOSITE_IMG='HansenComposite_18'
+HANSEN_ZLEVEL_FOLDER='HansenZLevel_18'
+GCE_TILE_ROOT='Hansen18'
 THRESHOLDS=[10,15,20,25,30,50,75]
 DEFAULT_GEOM_NAME='hansen_world'
 DEFAULT_VERSION=1
@@ -89,7 +89,7 @@ def export_tiles(image,z,v,threshold):
             skipEmptyTiles=True
         )
         task.start()
-        if NOISY: print task.status()
+        if NOISY: print(task.status())
         return task
 
 
@@ -107,7 +107,7 @@ def export_asset(image,z,v,threshold):
             maxPixels=500000000
         )
         task.start()
-        if NOISY: print task.status()
+        if NOISY: print(task.status())
         return task
 
 
@@ -121,9 +121,9 @@ def run(img_i,img_ly,maxz,minz,v,threshold,scale=SCALE,lowest_to_asset='False'):
         zimg=zjoin(zimg_i,zimg_ly)
         if z==minz:
             if (not lowest_to_asset) or (isinstance(lowest_to_asset,str) and lowest_to_asset.lower()=='false'):
-                print 'skiping inside-asset-export'
+                print('skiping inside-asset-export')
             else:
-                print 'export asset:',z
+                print('export asset:',z)
                 task=export_asset(zimg,z,v,threshold)
         task=export_tiles(zimg,z,v,threshold)
 
@@ -132,7 +132,7 @@ def run_zasset(img_i,img_ly,z,v,threshold,scale=SCALE):
     zimg_i=zintensity(img_i,z,scale)
     zimg_ly=zlossyear(img_ly,z,scale)
     zimg=zjoin(zimg_i,zimg_ly)
-    print 'export asset:',z
+    print('export asset:',z)
     task=export_tiles(zimg,z,v,threshold)
 
 
@@ -211,7 +211,7 @@ def main():
         geom=get_geom(geom_name)
         args.func(args)
     else: 
-        print 'INVALID THRESHOLD:',args.threshold,args
+        print('INVALID THRESHOLD:',args.threshold,args)
 
 
 if __name__ == "__main__":
